@@ -1,63 +1,112 @@
-'use strict';
+/*!
+ * chai
+ * Copyright(c) 2011 Jake Luer <jake@alogicalparadox.com>
+ * MIT Licensed
+ */
 
-var callBind = require('../');
-var hasStrictMode = require('has-strict-mode')();
-var forEach = require('for-each');
-var inspect = require('object-inspect');
-var v = require('es-value-fixtures');
+// Dependencies that are used for multiple exports are required here only once
+import * as checkError from 'check-error';
 
-var test = require('tape');
+// test utility
+export {test} from './test.js';
 
-test('callBindBasic', function (t) {
-	forEach(v.nonFunctions, function (nonFunction) {
-		t['throws'](
-			// @ts-expect-error
-			function () { callBind([nonFunction]); },
-			TypeError,
-			inspect(nonFunction) + ' is not a function'
-		);
-	});
+// type utility
+import {type} from './type-detect.js';
+export {type};
 
-	var sentinel = { sentinel: true };
-	/** @type {<T>(this: T, a: number, b: number) => [T | undefined, number, number]} */
-	var func = function (a, b) {
-		// eslint-disable-next-line no-invalid-this
-		return [!hasStrictMode && this === global ? undefined : this, a, b];
-	};
-	t.equal(func.length, 2, 'original function length is 2');
+// expectTypes utility
+export {expectTypes} from './expectTypes.js';
 
-	/** type {(thisArg: unknown, a: number, b: number) => [unknown, number, number]} */
-	var bound = callBind([func]);
-	/** type {((a: number, b: number) => [sentinel, typeof a, typeof b])} */
-	var boundR = callBind([func, sentinel]);
-	/** type {((b: number) => [sentinel, number, typeof b])} */
-	var boundArg = callBind([func, sentinel, 1]);
+// message utility
+export {getMessage} from './getMessage.js';
 
-	// @ts-expect-error
-	t.deepEqual(bound(), [undefined, undefined, undefined], 'bound func with no args');
+// actual utility
+export {getActual} from './getActual.js';
 
-	// @ts-expect-error
-	t.deepEqual(func(), [undefined, undefined, undefined], 'unbound func with too few args');
-	// @ts-expect-error
-	t.deepEqual(bound(1, 2), [hasStrictMode ? 1 : Object(1), 2, undefined], 'bound func too few args');
-	// @ts-expect-error
-	t.deepEqual(boundR(), [sentinel, undefined, undefined], 'bound func with receiver, with too few args');
-	// @ts-expect-error
-	t.deepEqual(boundArg(), [sentinel, 1, undefined], 'bound func with receiver and arg, with too few args');
+// Inspect util
+export {inspect} from './inspect.js';
 
-	t.deepEqual(func(1, 2), [undefined, 1, 2], 'unbound func with right args');
-	t.deepEqual(bound(1, 2, 3), [hasStrictMode ? 1 : Object(1), 2, 3], 'bound func with right args');
-	t.deepEqual(boundR(1, 2), [sentinel, 1, 2], 'bound func with receiver, with right args');
-	t.deepEqual(boundArg(2), [sentinel, 1, 2], 'bound func with receiver and arg, with right arg');
+// Object Display util
+export {objDisplay} from './objDisplay.js';
 
-	// @ts-expect-error
-	t.deepEqual(func(1, 2, 3), [undefined, 1, 2], 'unbound func with too many args');
-	// @ts-expect-error
-	t.deepEqual(bound(1, 2, 3, 4), [hasStrictMode ? 1 : Object(1), 2, 3], 'bound func with too many args');
-	// @ts-expect-error
-	t.deepEqual(boundR(1, 2, 3), [sentinel, 1, 2], 'bound func with receiver, with too many args');
-	// @ts-expect-error
-	t.deepEqual(boundArg(2, 3), [sentinel, 1, 2], 'bound func with receiver and arg, with too many args');
+// Flag utility
+export {flag} from './flag.js';
 
-	t.end();
-});
+// Flag transferring utility
+export {transferFlags} from './transferFlags.js';
+
+// Deep equal utility
+export {default as eql} from 'deep-eql';
+
+// Deep path info
+export {getPathInfo, hasProperty} from 'pathval';
+
+/**
+ * Function name
+ *
+ * @param {Function} fn
+ * @returns {string}
+ */
+export function getName(fn) {
+  return fn.name
+}
+
+// add Property
+export {addProperty} from './addProperty.js';
+
+// add Method
+export {addMethod} from './addMethod.js';
+
+// overwrite Property
+export {overwriteProperty} from './overwriteProperty.js';
+
+// overwrite Method
+export {overwriteMethod} from './overwriteMethod.js';
+
+// Add a chainable method
+export {addChainableMethod} from './addChainableMethod.js';
+
+// Overwrite chainable method
+export {overwriteChainableMethod} from './overwriteChainableMethod.js';
+
+// Compare by inspect method
+export {compareByInspect} from './compareByInspect.js';
+
+// Get own enumerable property symbols method
+export {getOwnEnumerablePropertySymbols} from './getOwnEnumerablePropertySymbols.js';
+
+// Get own enumerable properties method
+export {getOwnEnumerableProperties} from './getOwnEnumerableProperties.js';
+
+// Checks error against a given set of criteria
+export {checkError};
+
+// Proxify util
+export {proxify} from './proxify.js';
+
+// addLengthGuard util
+export {addLengthGuard} from './addLengthGuard.js';
+
+// isProxyEnabled helper
+export {isProxyEnabled} from './isProxyEnabled.js';
+
+// isNaN method
+export {isNaN} from './isNaN.js';
+
+// getOperator method
+export {getOperator} from './getOperator.js';
+
+/**
+ * Determines if an object is a `RegExp`
+ * This is used since `instanceof` will not work in virtual contexts
+ *
+ * @param {*} obj Object to test
+ * @returns {boolean}
+ */
+export function isRegExp(obj) {
+  return Object.prototype.toString.call(obj) === '[object RegExp]';
+}
+
+export function isNumeric(obj) {
+  return ['Number', 'BigInt'].includes(type(obj))
+}
